@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 const Navbar = () => {
   return (
@@ -8,21 +9,24 @@ const Navbar = () => {
 
         <nav className="flex items-center gap-6">
           <>
-            <a
-              href="#"
+            <Link
+              href="/"
               className="text-sm text-foreground hover:text-primary transition"
             >
               Home
-            </a>
-            <a
+            </Link>
+            <Link
               href="/admin/session"
               className="text-sm text-foreground hover:text-primary transition"
             >
               Schedules
-            </a>
-            <a href="/admin/profile" className="text-sm hover:text-primary transition">
+            </Link>
+            <Link
+              href="/admin/profile"
+              className="text-sm hover:text-primary transition"
+            >
               Profile
-            </a>
+            </Link>
             <Button variant="outline">Logout</Button>
           </>
         </nav>

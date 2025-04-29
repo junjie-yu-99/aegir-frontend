@@ -1,6 +1,7 @@
 import React from "react";
 import { IoMdCheckmarkCircleOutline } from "react-icons/io";
 import { Button, Card, CardContent } from "@/components/ui";
+import Link from "next/link";
 
 const PaymentConfirmation = () => {
   return (
@@ -15,7 +16,9 @@ const PaymentConfirmation = () => {
             payment is confirmed.
             <br /> We appreciate your business, thank you!
           </div>
-          <Button className="w-1/3 mx-auto bg-stone-400">Back to Home</Button>
+          <Button className="w-1/3 mx-auto bg-stone-400">
+            <Link href="/">Back to Home</Link>
+          </Button>
         </CardContent>
       </Card>
     </div>
