@@ -1,3 +1,4 @@
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -8,27 +9,30 @@ const Navbar = () => {
         <div className="text-xl font-bold text-primary">AEGIR</div>
 
         <nav className="flex items-center gap-6">
-          <>
-            <Link
-              href="/"
-              className="text-sm text-foreground hover:text-primary transition"
-            >
-              Home
-            </Link>
-            <Link
-              href="/admin/session"
-              className="text-sm text-foreground hover:text-primary transition"
-            >
-              Schedules
-            </Link>
-            <Link
-              href="/admin/profile"
-              className="text-sm hover:text-primary transition"
-            >
-              Profile
-            </Link>
-            <Button variant="outline">Logout</Button>
-          </>
+          <Link
+            href="/"
+            className="text-sm text-foreground hover:text-primary transition"
+          >
+            Home
+          </Link>
+          <Link
+            href="/admin/session"
+            className="text-sm text-foreground hover:text-primary transition"
+          >
+            Schedules
+          </Link>
+
+          {/* When signed in, show user profile button */}
+          <SignedIn>
+            <UserButton afterSignOutUrl="/" />
+          </SignedIn>
+
+          {/* When signed out, show login button */}
+          <SignedOut>
+            <SignInButton mode="modal">
+              <Button variant="default">Log In</Button>
+            </SignInButton>
+          </SignedOut>
         </nav>
       </div>
     </div>
