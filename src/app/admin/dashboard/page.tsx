@@ -30,7 +30,7 @@ export default function AdminDashboard() {
           sessionsRes.json(),
           paymentsRes.json(),
         ]);
-
+        console.log('[AdminDashboard] Full payments data:', payments);
         console.log('[AdminDashboard] Parsed data:');
         console.log('- Students:', students.length);
         console.log('- Trial Students:', trialStudents.length);
@@ -97,17 +97,22 @@ export default function AdminDashboard() {
             </tr>
           </thead>
           <tbody>
-            {stats.pendingPayments.map((p: any) => (
-              <tr key={p.id}>
-                <td className="border px-2 py-1">{p.students?.full_name || '—'}</td>
-                <td className="border px-2 py-1">${p.amount}</td>
-                <td className="border px-2 py-1">
-                  {p.due_date ? new Date(p.due_date).toLocaleDateString() : '—'}
-                </td>
-                <td className="border px-2 py-1">{p.status}</td>
-              </tr>
-            ))}
+            {stats.pendingPayments.map((p: any) => {
+              console.log('[Payment Row] Student name:', p.students?.full_name); // ✅ safe place for console log
+
+              return (
+                <tr key={p.id}>
+                  <td className="border px-2 py-1">{p.students?.full_name || '—'}</td>
+                  <td className="border px-2 py-1">${p.amount}</td>
+                  <td className="border px-2 py-1">
+                    {p.due_date ? new Date(p.due_date).toLocaleDateString() : '—'}
+                  </td>
+                  <td className="border px-2 py-1">{p.status}</td>
+                </tr>
+              );
+            })}
           </tbody>
+
         </table>
       </Section>
     </div>
