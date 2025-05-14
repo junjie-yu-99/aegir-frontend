@@ -54,9 +54,9 @@ const Registration = () => {
                 </label>
               </div>
               <div className="flex flex-col space-y-1.5 text-xs ">
-                By ticking this box, you agree to a trail account. This account
+                By ticking this box, you agree to a trial account. This account
                 will be activated for 1 month only and will be automatically
-                deeted after this period.
+                deleted after this period.
               </div>
             </div>
           </form>
