@@ -1,8 +1,13 @@
+"use client";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useSyncUser } from "@/hooks/useSyncUser"; // Import our custom hook
 
-const Navbar = () => {
+const Navbar: React.FC = () => {
+  // Use our custom hook to automatically sync users when they're logged in
+  const { syncStatus } = useSyncUser();
+
   return (
     <div className="bg-background sticky top-0 z-50 w-full">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
@@ -24,6 +29,10 @@ const Navbar = () => {
 
           {/* When signed in, show user profile button */}
           <SignedIn>
+            {/* We can optionally show sync status if needed */}
+            {syncStatus === 'syncing' && (
+              <span className="text-xs text-muted-foreground">Syncing...</span>
+            )}
             <UserButton afterSignOutUrl="/" />
           </SignedIn>
 
