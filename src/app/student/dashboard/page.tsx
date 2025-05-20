@@ -1,129 +1,154 @@
-//to be researched and figured out using clerk's authorisation token
-// 'use client';
+'use client'
 
-// import { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Home, CreditCard } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useUser } from '@clerk/nextjs';
 
-// export default function StudentDashboard() {
-//   const [data, setData] = useState({
-//     student: null,
-//     upcomingSessions: [],
-//     payments: [],
-//   });
+export default function StudentDashboard() {
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'payments'>('dashboard');
+  const { user } = useUser();
+  const router = useRouter();
+  const [studentData, setStudentData] = useState<any>(null);
 
-//   useEffect(() => {
-//     const fetchStudentData = async () => {
-//       console.log('[StudentDashboard] Fetching data...');
+  useEffect(() => {
+    if (user?.id) {
+      console.log('Clerk user:', user);
+      fetch(`http://localhost:8080/api/students/user/${user.id}`)
+        .then((res) => res.json())
+        .then((data) => {
+          console.log('Fetched student:', data);
+          setStudentData(data);
+        })
+        .catch((err) => console.error('Failed to fetch student data:', err));
+    }
+  }, [user]);
 
-//       try {
-//         const [studentRes, sessionsRes, paymentsRes] = await Promise.all([
-//           fetch('http://localhost:8080/api/students/me'),
-//           fetch('http://localhost:8080/api/sessions'),
-//           fetch('http://localhost:8080/api/payments/me'),
-//         ]);
+  return (
+    <div className="min-h-screen flex bg-gray-100">
+      {/* Sidebar */}
+      <aside className="w-64 bg-white shadow-md p-6 space-y-4">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold">Student Panel</h2>
+          {user && <p className="text-sm text-gray-600 mt-1">Hi, {user.firstName} 👋</p>}
+          {studentData && (
+            <p className="text-xs text-gray-500">Membership: {studentData.trial_status ?? 'N/A'}</p>
+          )}
+        </div>
 
-//         const [student, sessions, payments] = await Promise.all([
-//           studentRes.json(),
-//           sessionsRes.json(),
-//           paymentsRes.json(),
-//         ]);
+        <nav className="space-y-2">
+          <button
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg w-full text-left ${
+              activeTab === 'dashboard' ? 'bg-green-100 text-green-700' : 'hover:bg-gray-100'
+            }`}
+            onClick={() => setActiveTab('dashboard')}
+          >
+            <Home size={18} />
+            Dashboard
+          </button>
+          <button
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg w-full text-left ${
+              activeTab === 'payments' ? 'bg-green-100 text-green-700' : 'hover:bg-gray-100'
+            }`}
+            onClick={() => setActiveTab('payments')}
+          >
+            <CreditCard size={18} />
+            Payments
+          </button>
+        </nav>
+      </aside>
 
-//         const now = new Date();
-//         const upcoming = sessions
-//           .filter((s: any) => new Date(s.date) >= now)
-//           .slice(0, 5);
+      {/* Main content */}
+      <main className="flex-1 p-8">
+        {activeTab === 'dashboard' && (
+          <>
+            <h1 className="text-3xl font-bold mb-6">Student Dashboard</h1>
 
-//         setData({
-//           student,
-//           upcomingSessions: upcoming,
-//           payments: payments.slice(0, 5),
-//         });
+            {studentData && (
+              <section className="bg-white rounded-xl shadow p-5 mb-10">
+                <h2 className="text-xl font-semibold mb-2">Your Info</h2>
+                <ul className="text-gray-700 list-inside list-disc space-y-1">
+                  <li><strong>Full Name:</strong> {studentData.full_name}</li>
+                  <li><strong>Email:</strong> {studentData.email || 'N/A'}</li>
+                  <li><strong>Phone:</strong> {studentData.phone || 'N/A'}</li>
+                  <li><strong>Trial Status:</strong> {studentData.trial_status || 'N/A'}</li>
+                  <li><strong>Join Date:</strong> {studentData.join_date?.split('T')[0]}</li>
+                </ul>
+              </section>
+            )}
 
-//         console.log('[StudentDashboard] Data loaded');
-//       } catch (error) {
-//         console.error('[StudentDashboard] Error:', error);
-//       }
-//     };
+            <section className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+              <div className="bg-white rounded-xl shadow p-5">
+                <h2 className="text-xl font-semibold mb-2">Upcoming Sessions</h2>
+                <p className="text-gray-500">No upcoming sessions. Check back later!</p>
+              </div>
 
-//     fetchStudentData();
-//   }, []);
+              <div className="bg-white rounded-xl shadow p-5">
+                <h2 className="text-xl font-semibold mb-2">Attendance</h2>
+                <p className="text-gray-500">You have attended 0 sessions this month.</p>
+              </div>
+            </section>
 
-//   const { student, upcomingSessions, payments } = data;
+            <section className="bg-white rounded-xl shadow p-5 mb-10">
+              <h2 className="text-xl font-semibold mb-2">Membership Status</h2>
+              <p className="text-gray-500">
+                {studentData?.trial_status === 'active'
+                  ? 'Trial member. Trial expires soon.'
+                  : 'Full member.'}
+              </p>
+            </section>
 
-//   return (
-//     <div className="p-6 space-y-6">
-//       <h1 className="text-2xl font-bold">Student Dashboard</h1>
+            <section className="bg-white rounded-xl shadow p-5">
+              <h2 className="text-xl font-semibold mb-2">Messages</h2>
+              <ul className="text-gray-600 list-disc list-inside">
+                <li>Coach Lee: Remember to bring your cap!</li>
+                <li>Session on Friday moved to 5PM.</li>
+              </ul>
+            </section>
+          </>
+        )}
 
-//       {/* Profile Card */}
-//       {student && (
-//         <Card>
-//           <CardHeader title="👤 Profile" />
-//           <CardContent>
-//             <p><strong>Name:</strong> {student.full_name}</p>
-//             <p><strong>Email:</strong> {student.email}</p>
-//             <p><strong>Phone:</strong> {student.phone}</p>
-//             <p><strong>Trial Status:</strong> {student.trial_status || 'N/A'}</p>
-//             <p><strong>Joined:</strong> {new Date(student.join_date).toLocaleDateString()}</p>
-//             {student.notes && <p><strong>Notes:</strong> {student.notes}</p>}
-//           </CardContent>
-//         </Card>
-//       )}
+        {activeTab === 'payments' && (
+          <section className="bg-white rounded-xl shadow p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold">Payment History</h2>
+              <button
+                onClick={() => router.push('/student/payment')}
+                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+              >
+                Make Payment
+              </button>
+            </div>
 
-//       {/* Upcoming Sessions */}
-//       <Section title="📅 Upcoming Sessions">
-//         <ul className="list-disc pl-5 space-y-1">
-//           {upcomingSessions.map((s: any) => (
-//             <li key={s.id}>
-//               <strong>{s.title || 'Untitled'}</strong> – {new Date(s.date).toLocaleDateString()} @{' '}
-//               {new Date(s.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-//             </li>
-//           ))}
-//         </ul>
-//         {upcomingSessions.length === 0 && <p>No upcoming sessions.</p>}
-//       </Section>
-
-//       {/* Payments */}
-//       <Section title="💰 Recent Payments">
-//         <table className="w-full text-sm border">
-//           <thead>
-//             <tr className="bg-gray-100">
-//               <th className="border px-2 py-1">Amount</th>
-//               <th className="border px-2 py-1">Due</th>
-//               <th className="border px-2 py-1">Status</th>
-//             </tr>
-//           </thead>
-//           <tbody>
-//             {payments.map((p: any) => (
-//               <tr key={p.id}>
-//                 <td className="border px-2 py-1">${p.amount}</td>
-//                 <td className="border px-2 py-1">{p.due_date ? new Date(p.due_date).toLocaleDateString() : '—'}</td>
-//                 <td className="border px-2 py-1">{p.status}</td>
-//               </tr>
-//             ))}
-//           </tbody>
-//         </table>
-//         {payments.length === 0 && <p className="mt-2 text-gray-500">No payments found.</p>}
-//       </Section>
-//     </div>
-//   );
-// }
-
-// function Card({ children }: { children: React.ReactNode }) {
-//   return <div className="bg-white shadow rounded p-4 space-y-2">{children}</div>;
-// }
-
-// function CardHeader({ title }: { title: string }) {
-//   return <h2 className="text-lg font-semibold">{title}</h2>;
-// }
-
-// function CardContent({ children }: { children: React.ReactNode }) {
-//   return <div className="space-y-1">{children}</div>;
-// }
-
-// function Section({ title, children }: { title: string; children: React.ReactNode }) {
-//   return (
-//     <div>
-//       <h2 className="text-lg font-semibold mb-2">{title}</h2>
-//       {children}
-//     </div>
-//   );
-// }
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm text-left">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-2 font-medium text-gray-700">Date</th>
+                    <th className="px-4 py-2 font-medium text-gray-700">Amount</th>
+                    <th className="px-4 py-2 font-medium text-gray-700">Status</th>
+                    <th className="px-4 py-2 font-medium text-gray-700">Plan</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  <tr>
+                    <td className="px-4 py-2 text-gray-800">2024-05-01</td>
+                    <td className="px-4 py-2 text-gray-800">S$120.00</td>
+                    <td className="px-4 py-2 text-green-600 font-medium">Paid</td>
+                    <td className="px-4 py-2 text-gray-800">U12 Monthly</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 text-gray-800">2024-04-01</td>
+                    <td className="px-4 py-2 text-gray-800">S$120.00</td>
+                    <td className="px-4 py-2 text-green-600 font-medium">Paid</td>
+                    <td className="px-4 py-2 text-gray-800">U12 Monthly</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
+      </main>
+    </div>
+  );
+}
