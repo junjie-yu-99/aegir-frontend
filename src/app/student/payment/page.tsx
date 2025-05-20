@@ -16,38 +16,59 @@ const PaymentDetails = () => {
   const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!isLoaded || !user?.id) return;
+useEffect(() => {
+  if (!isLoaded || !user?.id) return;
 
-    const fetchStudentInfo = async () => {
-      try {
-        console.log("Clerk user ID:", user.id);
+  const fetchStudentInfo = async () => {
+    try {
+      console.log("Clerk user ID:", user.id);
 
-        const res = await fetch(`http://localhost:8080/api/students/user/${user.id}`);
-        if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.error || 'Failed to load student data');
-        }
-
-        const student = await res.json();
-        console.log("Fetched student:", student);
-
-        setStudentData({
-          email: student.email || user.emailAddresses[0]?.emailAddress || 'N/A',
-          membershipType: student.membership_plans?.name || 'N/A',
-          ageBracket: student.age_bracket || 'N/A',
-          amount: (student.membership_plans?.price || 0) / 100,
-        });
-      } catch (err: any) {
-        console.error('Error fetching student data:', err);
-        setError('Unable to load your payment info. Please try again later.');
-      } finally {
-        setLoading(false);
+      const res = await fetch(`http://localhost:8080/api/students/user/${user.id}`);
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Failed to load student data');
       }
-    };
 
-    fetchStudentInfo();
-  }, [isLoaded, user]);
+      const student = await res.json();
+      console.log("Fetched student:", student);
+
+      // Calculate age using year only
+      const dob = new Date(student.dob);
+      const today = new Date();
+      const age = today.getFullYear() - dob.getFullYear();
+
+      // Determine age bracket
+      let ageBracket = 'N/A';
+      if (age < 10) ageBracket = 'U10';
+      else if (age < 12) ageBracket = 'U12';
+      else if (age < 14) ageBracket = 'U14';
+      else if (age < 16) ageBracket = 'U16';
+      else if (age < 18) ageBracket = 'U18';
+      else ageBracket = 'Adult';
+
+      // Get correct price (monthly vs quarterly)
+      const isQuarterly = student.membership_plans?.is_quarterly_plan;
+      const priceCents = isQuarterly
+        ? parseInt(student.membership_plans?.quarterly_price || '0') * 100
+        : parseInt(student.membership_plans?.monthly_price || '0') * 100;
+
+      setStudentData({
+        email: student.email || user.emailAddresses[0]?.emailAddress || 'N/A',
+        membershipType: student.membership_plans?.name || 'N/A',
+        ageBracket,
+        amount: priceCents / 100, // display in dollars
+      });
+    } catch (err: any) {
+      console.error('Error fetching student data:', err);
+      setError('Unable to load your payment info. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchStudentInfo();
+}, [isLoaded, user]);
+
 
   if (loading) {
     return (
@@ -133,7 +154,9 @@ const PaymentDetails = () => {
                 You are paying <br />
                 <span className="text-6xl font-bold">S${studentData.amount.toFixed(2)}</span>
                 <br />
-                to AEGIR.Co
+                for a <span className="font-semibold">
+                  {studentData.membershipType.includes('Quarterly') ? 'Quarterly' : 'Monthly'}
+                </span> plan to AEGIR.Co
               </div>
               <Button
                 className="w-3/4 mx-auto"

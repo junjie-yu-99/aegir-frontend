@@ -11,6 +11,7 @@ export default function StudentDashboard() {
   const router = useRouter();
   const [studentData, setStudentData] = useState<any>(null);
 
+  
   useEffect(() => {
     if (user?.id) {
       console.log('Clerk user:', user);
